@@ -1,5 +1,5 @@
 import './App.css';
-import CardSlider from './components/CardSliderOld';
+import CardSlider from './components/CardSlider';
 
 function App() {
   return (
