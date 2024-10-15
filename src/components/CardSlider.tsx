@@ -1,9 +1,10 @@
 import { useGSAP } from '@gsap/react';
-import { Environment } from '@react-three/drei';
+import { OrbitControls, useHelper } from '@react-three/drei';
 import { Canvas, useThree } from '@react-three/fiber';
 import gsap from 'gsap';
 import { useEffect, useRef, useState } from 'react';
-import { Group, Mesh, Vector3 } from 'three';
+import { DirectionalLightHelper, Group, Mesh, Vector3 } from 'three';
+import { RectAreaLightHelper } from 'three-stdlib';
 import Model from './Model';
 
 const cardGLTF = [
@@ -15,13 +16,90 @@ const cardGLTF = [
   '/credit_card6/scene.gltf',
 ];
 
-const CameraAnimation = () => {
+const Camera = () => {
   const { camera } = useThree();
+  camera.near = 1;
+  camera.far = 50;
   camera.position.set(0, 3, 13);
   camera.lookAt(0, 0, 0);
 
   return null;
 };
+
+const Lights = () => {
+  const lightRectRef1 = useRef<any>(null);
+  const lightRectRef2 = useRef<any>(null);
+  const lightDirRef1 = useRef<any>(null);
+  const lightDirRef2 = useRef<any>(null);
+
+  useHelper(lightRectRef1, RectAreaLightHelper, 1);
+  useHelper(lightRectRef2, RectAreaLightHelper, 1);
+
+  useHelper(lightDirRef1, DirectionalLightHelper, 1);
+  useHelper(lightDirRef2, DirectionalLightHelper, 1);
+
+  return (
+    <>
+      <rectAreaLight
+        ref={lightRectRef1}
+        position={[-5, -3, 20]}
+        width={1}
+        height={10}
+        intensity={10}
+      />
+      <rectAreaLight
+        ref={lightRectRef2}
+        position={[5, -3, 10]}
+        width={1}
+        height={10}
+        intensity={20}
+      />
+      <directionalLight
+        ref={lightDirRef1}
+        position={[-5, -3, 20]}
+        intensity={0.2}
+        // angle={Math.PI / 4} // Angle du faisceau
+        // penumbra={0.2} // Pénombre pour adoucir les bords du faisceau
+        // decay={2} // Atténuation du faisceau
+      />
+      <directionalLight
+        ref={lightDirRef2}
+        position={[5, -3, 10]}
+        intensity={1}
+      />
+    </>
+  );
+};
+
+// const Lights = () => {
+//   const lightRef1 = useRef<any>(null);
+//   const lightRef2 = useRef<any>(null);
+
+//   // Utilise des helpers pour visualiser les lumières dans la scène
+//   useHelper(lightRef1, DirectionalLightHelper, 1);
+//   useHelper(lightRef2, DirectionalLightHelper, 1);
+
+//   return (
+//     <>
+//       <directionalLight
+//         ref={lightRef1}
+//         position={[-5, -3, 20]}
+//         intensity={1}
+//         angle={Math.PI / 4} // Angle du faisceau
+//         penumbra={0.2} // Pénombre pour adoucir les bords du faisceau
+//         decay={2} // Atténuation du faisceau
+//       />
+//       <directionalLight
+//         ref={lightRef2}
+//         position={[5, -3, 10]}
+//         intensity={2}
+//         angle={Math.PI / 4} // Angle du faisceau
+//         penumbra={0.5} // Pénombre pour adoucir les bords du faisceau
+//         decay={2} // Atténuation du faisceau
+//       />
+//     </>
+//   );
+// };
 
 const Plane = ({
   position,
@@ -103,9 +181,8 @@ const CardSlider = () => {
   return (
     <div className='w-screen h-screen fixed inset-0 bg-black'>
       <Canvas style={{ width: '100%', height: '100%' }}>
-        <directionalLight position={[-8, -8, 5]} intensity={5} />
-        <directionalLight position={[5, 5, 9]} intensity={10} />
-        <CameraAnimation />
+        <Lights />
+        <Camera />
         <group ref={groupRef} rotation={[0, -1.57, 0]}>
           {cardGLTF.map((pathGLTF, index) => (
             <Plane
@@ -117,8 +194,8 @@ const CardSlider = () => {
             />
           ))}
         </group>
-        {/* <OrbitControls /> */}
-        <Environment files='/environement2.exr' background={false} />
+        <OrbitControls />
+        {/* <Environment files='/environement1.exr' background={true} /> */}
       </Canvas>
       <div className='fixed bottom-10 left-1/2 -translate-x-1/2 gap-3 flex'>
         {[...Array(TOTAL_CARDS)].map((_, index) => (
